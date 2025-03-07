@@ -10,6 +10,6 @@ class LocalDevelopmentConfig(Config):
     #config for security
     SECRET_KEY = "mysecretkey" #change this to a random string - for hashing
     SECURITY_PASSWORD_HASH = "bcrypt" #mechanism to hash passwords
-    SECURITY_PASSWROD_SALT = "MYSALT" #change this to a random string - for adding salt
+    SECURITY_PASSWORD_SALT = "MYSALT" #change this to a random string - for adding salt
     WTF_CSRF_ENABLED = False
     SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authorization-Token"

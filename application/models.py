@@ -5,10 +5,10 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    username = db.Column(db.String(100), nullable=False)
-    qualification = db.Column(db.String(100), nullable=False)
-    dob = db.Column(db.Date, nullable=False)
-    fs_uniquifier = db.Column(db.String, unique = True nullable=False)
+    username = db.Column(db.String(100), unique = True,nullable=False)
+    qualification = db.Column(db.String(100))
+    dob = db.Column(db.Date)
+    fs_uniquifier = db.Column(db.String, unique = True, nullable=False)
     active = db.Column(db.Boolean, default=True)
     roles = db.relationship('Role', backref='bearer', lazy=True, secondary='user_roles')
 
@@ -30,6 +30,7 @@ class Subject(db.Model):
     image = db.Column(db.String(255), nullable=False)
     chapters = db.relationship('Chapter', backref='subject', lazy=True, cascade='all, delete-orphan')
 
+#one-to-many relationship between subject and chapters
 class Chapter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -37,6 +38,7 @@ class Chapter(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id', ondelete='CASCADE'))
     quizzes = db.relationship('Quiz', backref='chapter', lazy=True, cascade='all, delete-orphan')
 
+#one-to-many relationship between chapter and quizzes
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id', ondelete='CASCADE'))
@@ -47,6 +49,7 @@ class Quiz(db.Model):
     questions = db.relationship('Questions', backref='quiz', lazy=True, cascade='all, delete-orphan')
     scores = db.relationship('Scores', backref='quiz', lazy=True, cascade='all, delete-orphan')
 
+#one-to-many relationship between quiz and questions
 class Questions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete='CASCADE'))
@@ -59,6 +62,7 @@ class Questions(db.Model):
     #explanation = db.Column(db.String(255), nullable=False)
     #etc: Additional fields (if any)
 
+#one-to-many relationship between quiz and scores and many-to-many with user?
 class Scores(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete='CASCADE'))
