@@ -38,6 +38,8 @@ with app.app_context():
                                            username="user1",
                                            roles=['user'])
     db.session.commit()
+
+from application.routes import *
     
 if __name__ == "__main__":
-    app.run()
+    app.run() 
