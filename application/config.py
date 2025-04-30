@@ -1,6 +1,7 @@
 class Config():
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SECURITY_LOGIN_ENDPOINT = None #disable the default login endpoint of flask-security
 
 class LocalDevelopmentConfig(Config):
     #configuration for local development

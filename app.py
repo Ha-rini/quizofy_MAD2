@@ -5,13 +5,18 @@ from application.models import User, Role, UserRoles, Subject, Chapter, Quiz, Qu
 from application.config import LocalDevelopmentConfig
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security import hash_password
+from werkzeug.security import generate_password_hash, check_password_hash
+from application.resources import *
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(LocalDevelopmentConfig)
     db.init_app(app)
+    api.init_app(app)
     datastore = SQLAlchemyUserDatastore(db, User, Role) 
+    
     app.security = Security(app, datastore)
+    
     app.app_context().push()
     return app
 
@@ -28,13 +33,13 @@ with app.app_context():
     #dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
     if not app.security.datastore.find_user(email = "user@admin.com"):
         app.security.datastore.create_user(email="user@admin.com",
-                                           password=hash_password("adminpass"),
+                                           password=generate_password_hash("adminpass"),
                                            username="admin",                                           
                                            roles=['admin'])
         
     if not app.security.datastore.find_user(email = "user1@gmail.com"):
         app.security.datastore.create_user(email="user1@gmail.com",
-                                           password=hash_password("pass@123"),
+                                           password=generate_password_hash("pass@123"),
                                            username="user1",
                                            roles=['user'])
     db.session.commit()
