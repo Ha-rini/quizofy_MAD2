@@ -1,13 +1,14 @@
 from .database import db
 from .models import User, Role, UserRoles, Subject, Chapter, Quiz, Questions, Scores
-from flask import current_app as app, jsonify, request
-from flask_security import auth_required, roles_required, roles_accepted, current_user, login_user, logout_user
+from flask import current_app as app, jsonify, render_template, request
+from flask_security import auth_required, roles_required, roles_accepted
+from flask_login import current_user, login_user, logout_user
 from flask_security import hash_password, verify_password
 from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route('/')
 def home():
-    return "<h1>Home Page</h1>"
+    return render_template('index.html') 
 
 @app.route('/api/login', methods=['POST'])
 def user_login():
@@ -26,10 +27,6 @@ def user_login():
         }), 400
 
     user = app.security.datastore.find_user(email = email)
-    if not user:
-        return jsonify({
-            "message": "User not found"
-        }), 404
     
     if user: 
         if check_password_hash(user.password, password):
@@ -38,17 +35,25 @@ def user_login():
             #         "message": "User already logged in"
             #     }), 400
                
-            login_user(user) #login the user
+            #login the user
+            login_user(user)
+            print(current_user)
             
             return jsonify({
                 "id": user.id,
                 "username": user.username,
-                "auth-token": user.get_auth_token()
+                "auth-token": user.get_auth_token(),
+                "roles": [role.name for role in user.roles]
             }), 200
+        else:
+            return jsonify({
+                "message": "Invalid credentials!"
+            }), 400
         
+    else:
         return jsonify({
-            "message": "Invalid credentials!"
-        }), 400
+            "message": "User not found"
+        }), 404
 
 
 @app.route('/api/admin')
