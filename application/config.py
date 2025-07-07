@@ -13,4 +13,4 @@ class LocalDevelopmentConfig(Config):
     SECURITY_PASSWORD_HASH = "bcrypt" #mechanism to hash passwords
     SECURITY_PASSWORD_SALT = "MYSALT" #change this to a random string - for adding salt
     WTF_CSRF_ENABLED = False
-    SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authorization-Token"
+    SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authentication-Token"

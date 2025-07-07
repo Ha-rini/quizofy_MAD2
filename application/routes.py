@@ -64,7 +64,7 @@ def admin_home():
         "message": "Admin successfully logged in"
     }
 
-@app.route('/api/user') #dont give user_id to avoid leaking info
+@app.route('/api/userdashboard') #dont give user_id to avoid leaking info
 @auth_required('token') #authentication
 @roles_required('user') #rbac/authorization
 def user_home():
@@ -72,8 +72,9 @@ def user_home():
     return jsonify({
         "username": user.username,
         "email": user.email,
-        "password": user.password
-    })
+        "password": user.password,
+        
+    }), 200
 
 
 @app.route('/api/register', methods=['POST'])

@@ -5,6 +5,7 @@ export default {
             <div class="border mx-auto mt-5" style="height:350px; width:300px">
                 <div>
                     <h2 class="text-center mt-5">Login</h2>
+                    <p class="text-danger">{{message}}</p>
                     <div>
                         <label for="email">Email:</label>
                         <input type="email" id="email" v-model="formData.email">
@@ -27,7 +28,8 @@ export default {
             formData : {
             email: "",
             password: ""
-            }
+            },
+            message: ""
         }
     },
     methods: {
@@ -39,12 +41,13 @@ export default {
                 },
                 body: JSON.stringify(this.formData) //content goes to backend as JSON string
             })
-            .then(response => response.json()) // response is converted to JSON
+            .then(response => response.json())
             .then(data => {
                 localStorage.setItem("auth_token", data['auth-token'])// token is stored in local storage
                 localStorage.setItem("id", data['id'])// user id is stored in local storage
-                this.$router.push('/user'); // redirect to home page
-            })            
+                this.$router.push('/userdashboard'); // redirect to home page
+                })            
+            }
         }
     }
-}
+
