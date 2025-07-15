@@ -10,6 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 def home():
     return render_template('index.html') 
 
+
 @app.route('/api/login', methods=['POST'])
 def user_login():
     credentials = request.get_json()

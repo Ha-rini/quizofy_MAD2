@@ -22,3 +22,12 @@
     </div>
 
 </div>
+
+<div v-for="sub in subjects" class="card" style="width: 18rem;">
+    <img :src="sub.image" class="card-img-top" alt="Subject Thumbnail">
+    <div class="card-body">
+        <h5 class="card-title">{{sub.name}}</h5>
+        <p class="card-text">{{sub.description}}</p>
+        <a href="#" class="btn btn-primary">See chapters</a>
+    </div>
+</div>

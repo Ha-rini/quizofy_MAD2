@@ -5,16 +5,17 @@ export default {
             <div class="border mx-auto mt-5" style="height:350px; width:300px">
                 <div>
                     <h2 class="text-center mt-5">Login</h2>
-                    <p class="text-danger">{{message}}</p>
-                    <div>
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" v-model="formData.email">
+                    <p class="mx-2 mt-2 text-danger">{{message}}</p>
+                    <div class="mx-2 mb-3">
+                            <label for="email" class="form-label">Email address:</label>
+                            <input type="email" class="form-control" id="email" placeholder="name@example.com" v-model="formData.email">
                     </div>
-                    <div>
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" v-model="formData.password">
+                    
+                    <div class="mx-2 mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="password" v-model="formData.password">
                     </div>
-                    <div>
+                    <div class="mx-2 mb-3 text-center">
                         <button class="btn btn-dark" @click="loginuser">Login</button>
                     </div>
 
@@ -43,11 +44,22 @@ export default {
             })
             .then(response => response.json())
             .then(data => {
-                localStorage.setItem("auth_token", data['auth-token'])// token is stored in local storage
-                localStorage.setItem("id", data['id'])// user id is stored in local storage
-                this.$router.push('/userdashboard'); // redirect to home page
-                })            
-            }
+                if (Object.keys(data).includes('auth-token')){
+                    localStorage.setItem("auth_token", data['auth-token'])// token is stored in local storage
+                    localStorage.setItem("id", data.id)// user id is stored in local storage
+                    localStorage.setItem("username", data.username)// username is stored in local storage
+                    //for admin login?
+                    if (data.roles.includes('admin')) {
+                        this.$router.push('/admin');
+                    } else {
+                        this.$router.push('/userdashboard');
+                    }
+                }
+                else {
+                    this.message = data.message; // display error message) 
+                }
+            })
         }
     }
+}
 

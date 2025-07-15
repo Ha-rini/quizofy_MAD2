@@ -17,7 +17,7 @@ parser.add_argument('image', type=str)
 
 class SubjectsApi(Resource):
     @auth_required('token')
-    @roles_required('admin')
+    # @roles_required('admin')
     def get(self):
         subjects = Subject.query.all()
         subjects_json = []
@@ -28,7 +28,8 @@ class SubjectsApi(Resource):
             this_subject['description'] = subject.description
             this_subject['image'] = subject.image
             subjects_json.append(this_subject)
-        if this_subject:
+        print(subjects_json)
+        if subjects_json:
             return subjects_json, 200
         
         return {
