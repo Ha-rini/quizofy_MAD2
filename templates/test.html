@@ -31,3 +31,22 @@
         <a href="#" class="btn btn-primary">See chapters</a>
     </div>
 </div>
+
+<!-- add new subject -->
+<div>
+    <div class="mb-3">
+      <label for="subjectname" class="form-label">Subject Name</label>
+      <input type="text" class="form-control" id="subjectname" placeholder="Enter subject name" v-model="subjectsData.name">
+    </div>
+    <div class="mb-3">
+      <label for="subjectdescription" class="form-label">Subject Description</label>
+      <textarea class="form-control" id="subjectdescription" rows="3" v-model="subjectsData.description"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="subjectimage" class="form-label">Subject Image</label>
+      <input type="file" class="form-control" id="subjectimage" accept="image/*" v-model="subjectsData.image">
+    </div>
+    <div class="mb-3 text-end">
+        <button class="btn btn-primary" @click="addSubject">Add Subject</button>
+    </div>
+</div>

@@ -5,6 +5,7 @@ from flask_security import auth_required, roles_required, roles_accepted
 from flask_login import current_user, login_user, logout_user
 from flask_security import hash_password, verify_password
 from werkzeug.security import generate_password_hash, check_password_hash
+from .utils import roles_list
 
 @app.route('/')
 def home():
@@ -44,7 +45,7 @@ def user_login():
                 "id": user.id,
                 "username": user.username,
                 "auth-token": user.get_auth_token(),
-                "roles": [role.name for role in user.roles]
+                "roles": roles_list(user.roles)
             }), 200
         else:
             return jsonify({
@@ -73,8 +74,7 @@ def user_home():
     return jsonify({
         "username": user.username,
         "email": user.email,
-        "password": user.password,
-        
+        "roles": roles_list(user.roles)
     }), 200
 
 

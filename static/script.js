@@ -5,13 +5,15 @@ import Navbar from './components/Navbar.js';
 import Footer from './components/Footer.js';
 import AdminDashboard from './components/AdminDashboard.js';
 import UserDashboard from './components/UserDashboard.js';
+import UpdateSubject from './components/UpdateSubject.js';
 
 const routes = [
     {path: '/', component: Home},
     {path: '/login', component: Login},
     {path: '/register', component: Register},
     {path: '/admin', component: AdminDashboard},
-    {path: '/userdashboard', component: UserDashboard}
+    {path: '/userdashboard', component: UserDashboard},
+    {path: '/subject/update/:sub_id', name:'UpdateSubject', component: UpdateSubject}
 ]
 
 const router = new VueRouter({
@@ -21,10 +23,7 @@ const router = new VueRouter({
 const app = new Vue({
     el:"#app",
     router, // router: router
-    components: {
-        'nav-bar': Navbar,
-        'footer-bar': Footer
-    },
+    
     template: `
     <div class="container">
         <nav-bar></nav-bar>
@@ -34,6 +33,10 @@ const app = new Vue({
     </div>
     `,
     data: {
-    
+        section:"Frontend"
+    },
+    components: {
+        'nav-bar': Navbar,
+        'footer-bar': Footer
     }
 })

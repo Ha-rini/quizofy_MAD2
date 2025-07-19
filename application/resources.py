@@ -1,19 +1,20 @@
+from flask import request
 from flask_restful import Api, Resource, reqparse
 from .models import *
 from flask_security import auth_required, roles_required, roles_accepted, current_user
+from werkzeug.utils import secure_filename
+import os
+from .utils import roles_list
 
 api = Api()
 
-def roles_list(roles):
-    roles_list = []
-    for role in roles:
-        roles_list.append(role.name)
-    return roles_list
 
 parser = reqparse.RequestParser()
 parser.add_argument('name', type=str)
 parser.add_argument('description', type=str)
 parser.add_argument('image', type=str)
+
+UPLOAD_FOLDER = 'static/images'
 
 class SubjectsApi(Resource):
     @auth_required('token')
@@ -39,16 +40,25 @@ class SubjectsApi(Resource):
     @auth_required('token')
     @roles_required('admin')
     def post(self):
-        args = parser.parse_args()
-        if not (args['name'] and args['description'] and args['image']):
+        name = request.form.get('name')
+        description = request.form.get('description')
+        image_file = request.files.get('image')
+
+        if not (name and description and image_file):
             return {"message": "All fields (name, description, image) are required"}, 400
-        if Subject.query.filter_by(name=args['name']).first():
+        if Subject.query.filter_by(name=name).first():
             return {"message": "Subject with this name already exists"}, 400
         
         try:
-            subject = Subject(name=args['name'], 
-                            description=args['description'], 
-                            image=args['image'])
+        
+            filename = secure_filename(image_file.filename)
+            image_path = os.path.join(UPLOAD_FOLDER, filename)
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            image_file.save(image_path)
+
+            subject = Subject(name=name, 
+                            description=description, 
+                            image=image_path)
             db.session.add(subject)
             db.session.commit()
             return {
