@@ -44,7 +44,8 @@ export default {
             subjectsData: {
                 name: '',
                 description: ''
-            }
+            },
+            message:""
         };
     },
 
@@ -111,7 +112,9 @@ export default {
                 this.subjectsData.description = '';
                 fileInput.value = ''; // Reset file input manually
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+            });
         }
     }
 };

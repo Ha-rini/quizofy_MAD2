@@ -50,3 +50,44 @@
         <button class="btn btn-primary" @click="addSubject">Add Subject</button>
     </div>
 </div>
+
+<!-- show quizzes -->
+
+<table class="table">
+    <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">No. of Questions</th>
+                <th scope="col">Quiz Name</th>
+                <th scope="col">Quiz Description</th>
+                <th scope="col">Date</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Marks</th>
+                <th scope="col">Chapter</th>
+                <th scope="col">Single Attempt </th>
+                <th scope="col">Actions</th>
+            </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(quiz, index) in quizzes" :key="quiz.id">
+            <th scope="row">{{ index + 1 }}</th>
+            <td>{{ quiz.questions.count }}</td>
+            <td>{{ quiz.name }}</td>    
+            <td>{{ quiz.description }}</td>
+            <td>{{ quiz.date_of_quiz }}</td>
+            <td>{{ quiz.time_duration }}</td>
+            <td>{{ quiz.marks }}</td>
+            <td>{{ quiz.chapter }}</td>
+            <td>{{ if quiz.single_attempt }}
+                        Yes
+                {{ else }}
+                        No
+                {{ endif }}
+            </td>
+            <td>
+                <button class="btn btn-info" @click="viewQuiz(quiz.id)">View</button>
+                <button class="btn btn-success" @click="playQuiz(quiz.id)">Start</button>
+            </td>
+        </tr>
+    </tbody>
+</table>

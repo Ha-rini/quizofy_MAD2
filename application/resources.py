@@ -114,32 +114,123 @@ api.add_resource(SubjectsApi, '/api/subjects/get',
                             '/api/subjects/update/<int:sub_id>',
                             '/api/subjects/delete/<int:sub_id>')    
 
+parser = reqparse.RequestParser()
+parser.add_argument('name', type=str)
+parser.add_argument('description', type=str)
+parser.add_argument('subject_id', type=int)
+
 class ChaptersApi(Resource):
     @auth_required('token')
-    @roles_required('admin')
     def get(self):
         chapters = Chapter.query.all()
         chapters_json = []
         for chapter in chapters:
-            this_chapter = {}
-            this_chapter["id"] = chapter.id
-            this_chapter["name"] = chapter.name
-            this_chapter['description'] = chapter.description
-            this_chapter['subject_name'] = chapter.subject.name
+            this_chapter = {
+                "id": chapter.id,
+                "name": chapter.name,
+                "description": chapter.description,
+                "subject_name": chapter.subject.name if chapter.subject else "N/A"
+            }
             chapters_json.append(this_chapter)
-            
-        if this_chapter:
+        print(chapters_json)
+        
+        if chapters_json:
             return chapters_json, 200
         
+        return {"message": "No chapters found"}, 404
+
+    @auth_required('token')
+    @roles_required('admin')
+    def post(self):
+        name = request.form.get('name')
+        description = request.form.get('description')
+        subject_id = request.form.get('subject_id')
+
+        if not (name and description and subject_id):
+            return {"message": "All fields (name, description, subject_id) are required"}, 400
+
+        subject = Subject.query.get(subject_id)
+        if not subject:
+            return {"message": "Invalid subject_id"}, 400
+
+        try:
+            chapter = Chapter(name=name, description=description, subject_id=subject_id)
+            db.session.add(chapter)
+            db.session.commit()
+            return {"message": "Chapter created successfully"}, 201
+        except Exception as e:
+            return {"message": f"Error creating chapter: {str(e)}"}, 500
+
+    @auth_required('token')
+    @roles_required('admin')
+    def put(self, chap_id):
+        args = parser.parse_args()
+        chapter = Chapter.query.get(chap_id)
+
+        if not chapter:
+            return {"message": "Chapter not found"}, 404
+
+        if not (args['name'] and args['description'] and args['subject_id']):
+            return {"message": "All fields (name, description, subject_id) are required"}, 400
+
+        subject = Subject.query.get(args['subject_id'])
+        if not subject:
+            return {"message": "Invalid subject_id"}, 400
+
+        try:
+            chapter.name = args['name']
+            chapter.description = args['description']
+            chapter.subject_id = args['subject_id']
+            db.session.commit()
+            return {"message": "Chapter updated successfully"}, 200
+        except Exception as e:
+            return {"message": f"Error updating chapter: {str(e)}"}, 500
+
+    @auth_required('token')
+    @roles_required('admin')
+    def delete(self, chap_id):
+        chapter = Chapter.query.get(chap_id)
+
+        if chapter:
+            db.session.delete(chapter)
+            db.session.commit()
+            return {"message": "Chapter deleted successfully"}, 200
+        
+        return {"message": "Chapter not found"}, 404
+
+api.add_resource(ChaptersApi,
+                 '/api/chapters/get',
+                 '/api/chapters/create',
+                 '/api/chapters/update/<int:chap_id>',
+                 '/api/chapters/delete/<int:chap_id>')
+
+class QuizApi(Resource):
+    @auth_required('token')
+    # @roles_required('admin')
+    def get(self):
+        quizzes = Quiz.query.all()
+        quizzes_json = []
+        for quiz in quizzes:
+            this_quiz = {}
+            this_quiz["id"] = quiz.id
+            this_quiz["name"] = quiz.name
+            this_quiz["date_of_quiz"] = quiz.date_of_quiz
+            this_quiz["time_duration"] = quiz.time_duration
+            this_quiz["marks"] = quiz.marks
+            this_quiz["description"] = quiz.description
+            this_quiz["chapter_name"] = quiz.chapter.name if quiz.chapter else None
+            this_quiz["single_attempt"] = quiz.single_attempt
+            this_quiz["questions"] = [q.question_statement for q in quiz.questions]
+            quizzes_json.append(this_quiz)
+        print(quizzes_json)
+        if quizzes_json:
+            return quizzes_json, 200
+        
         return {
-                "message": "No chapters found"
+            "message": "No quizzes found"
         }, 404
-    
-api.add_resource(ChaptersApi, '/api/chapters/get')
 
-#class QuizApi(Resource):
-
-
+api.add_resource(QuizApi, '/api/quiz/get')
 
 class QuizscoresApi(Resource):
     @auth_required('token')
