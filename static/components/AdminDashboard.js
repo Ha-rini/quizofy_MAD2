@@ -10,9 +10,9 @@ export default {
                     <div class="card-body">
                         <h5 class="card-title">{{ sub.name }}</h5>
                         <p class="card-text">{{ sub.description }}</p>
-                        <a href="#" class="btn btn-primary">See chapters</a>
+                        <router-link :to="{ name: 'Chapters', params: { subject_id: sub.id } }" class="btn btn-primary">See chapters</router-link>
                         <router-link :to="{ name: 'UpdateSubject', params: { sub_id: sub.id } }" class="btn btn-warning">Edit</router-link>
-                        <a href="#" class="btn btn-danger">Delete</a>
+                        <button class="btn btn-danger" @click="deleteSubject(sub.id)">Delete</button>
                     </div>
                 </div>
             </div>
@@ -115,6 +115,22 @@ export default {
             .catch(err => {
                 console.error(err);
             });
+        },
+        deleteSubject(subId) {
+            if (!confirm("Are you sure you want to delete this subject?")) return;
+            fetch(`/api/subjects/delete/${subId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authentication-Token': localStorage.getItem('auth_token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                this.fetchSubjects();
+            })
+            .catch(err => console.error(err));
         }
+
     }
 };

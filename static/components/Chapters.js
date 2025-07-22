@@ -10,7 +10,7 @@ export default {
                     <div class="card-body">
                         <h5 class="card-title">{{ chap.name }}</h5>
                         <p class="card-text">{{ chap.description }}</p>
-                        <a href="#" class="btn btn-primary">See chapters</a>
+                        <a href="#" class="btn btn-primary">See Quizzes</a>
                         <router-link :to="{ name: 'UpdateChapter', params: { chap_id: chap.id } }" class="btn btn-warning">Edit</router-link>
                         <a href="#" class="btn btn-danger">Delete</a>
                     </div>
@@ -45,15 +45,15 @@ export default {
         };
     },
     mounted() {
-        this.fetchChapters();
+        this.fetchChapters(this.$route.params.subject_id);
     },
     methods: {
-        fetchChapters() {
-            fetch('/api/chapters/get', {
+        fetchChapters(subjectId) {
+            fetch(`/api/chapters/get/${subjectId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem("auth_token")}`
+                    'Authentication-Token': localStorage.getItem("auth_token")
                 }
             })
             .then(response => response.json())
@@ -91,3 +91,5 @@ export default {
         }
     }
 }
+
+// not visible when reloaded

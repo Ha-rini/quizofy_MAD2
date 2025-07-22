@@ -9,10 +9,10 @@ from .utils import roles_list
 api = Api()
 
 
-parser = reqparse.RequestParser()
-parser.add_argument('name', type=str)
-parser.add_argument('description', type=str)
-parser.add_argument('image', type=str)
+subject_parser = reqparse.RequestParser()
+subject_parser.add_argument('name', type=str)
+subject_parser.add_argument('description', type=str)
+subject_parser.add_argument('image', type=str)
 
 UPLOAD_FOLDER = 'static/images'
 
@@ -72,7 +72,7 @@ class SubjectsApi(Resource):
     @auth_required('token')
     @roles_required('admin')
     def put(self, sub_id):
-        args = parser.parse_args()
+        args = subject_parser.parse_args()
         subject = Subject.query.get(sub_id)
 
         if not (args['name'] and args['description'] and args['image']):
@@ -114,15 +114,15 @@ api.add_resource(SubjectsApi, '/api/subjects/get',
                             '/api/subjects/update/<int:sub_id>',
                             '/api/subjects/delete/<int:sub_id>')    
 
-parser = reqparse.RequestParser()
-parser.add_argument('name', type=str)
-parser.add_argument('description', type=str)
-parser.add_argument('subject_id', type=int)
+chapter_parser = reqparse.RequestParser()
+chapter_parser.add_argument('name', type=str)
+chapter_parser.add_argument('description', type=str)
+chapter_parser.add_argument('subject_id', type=int)
 
 class ChaptersApi(Resource):
     @auth_required('token')
-    def get(self):
-        chapters = Chapter.query.all()
+    def get(self, subject_id):
+        chapters = Chapter.query.filter_by(subject_id=subject_id).all()
         chapters_json = []
         for chapter in chapters:
             this_chapter = {
@@ -164,7 +164,7 @@ class ChaptersApi(Resource):
     @auth_required('token')
     @roles_required('admin')
     def put(self, chap_id):
-        args = parser.parse_args()
+        args = chapter_parser.parse_args()
         chapter = Chapter.query.get(chap_id)
 
         if not chapter:
@@ -199,38 +199,142 @@ class ChaptersApi(Resource):
         return {"message": "Chapter not found"}, 404
 
 api.add_resource(ChaptersApi,
-                 '/api/chapters/get',
+                 '/api/chapters/get/<int:subject_id>',
                  '/api/chapters/create',
                  '/api/chapters/update/<int:chap_id>',
                  '/api/chapters/delete/<int:chap_id>')
 
+# Create a parser for update (PUT) request
+quiz_parser = reqparse.RequestParser()
+quiz_parser.add_argument('name', type=str)
+quiz_parser.add_argument('date_of_quiz', type=str)
+quiz_parser.add_argument('time_duration', type=str)
+quiz_parser.add_argument('marks', type=int)
+quiz_parser.add_argument('description', type=str)
+quiz_parser.add_argument('chapter_id', type=int)
+quiz_parser.add_argument('single_attempt', type=bool)
+
 class QuizApi(Resource):
     @auth_required('token')
-    # @roles_required('admin')
     def get(self):
         quizzes = Quiz.query.all()
         quizzes_json = []
         for quiz in quizzes:
-            this_quiz = {}
-            this_quiz["id"] = quiz.id
-            this_quiz["name"] = quiz.name
-            this_quiz["date_of_quiz"] = quiz.date_of_quiz
-            this_quiz["time_duration"] = quiz.time_duration
-            this_quiz["marks"] = quiz.marks
-            this_quiz["description"] = quiz.description
-            this_quiz["chapter_name"] = quiz.chapter.name if quiz.chapter else None
-            this_quiz["single_attempt"] = quiz.single_attempt
-            this_quiz["questions"] = [q.question_statement for q in quiz.questions]
+            this_quiz = {
+                "id": quiz.id,
+                "name": quiz.name,
+                "date_of_quiz": quiz.date_of_quiz,
+                "time_duration": quiz.time_duration,
+                "marks": quiz.marks,
+                "description": quiz.description,
+                "chapter_name": quiz.chapter.name if quiz.chapter else None,
+                "single_attempt": quiz.single_attempt,
+                "questions": [q.question_statement for q in quiz.questions]
+            }
             quizzes_json.append(this_quiz)
-        print(quizzes_json)
+        
         if quizzes_json:
             return quizzes_json, 200
-        
-        return {
-            "message": "No quizzes found"
-        }, 404
+        return {"message": "No quizzes found"}, 404
 
-api.add_resource(QuizApi, '/api/quiz/get')
+    @auth_required('token')
+    @roles_required('admin')
+    def post(self):
+        name = request.form.get('name')
+        date_of_quiz = request.form.get('date_of_quiz')
+        time_duration = request.form.get('time_duration')
+        marks = request.form.get('marks')
+        description = request.form.get('description')
+        chapter_id = request.form.get('chapter_id')
+        single_attempt = request.form.get('single_attempt', 'false').lower() == 'true'
+
+        if not all([name, date_of_quiz, time_duration, marks, description, chapter_id]):
+            return {"message": "All fields are required"}, 400
+        if Quiz.query.filter_by(name=name).first():
+            return {"message": "Quiz with this name already exists"}, 400
+
+        try:
+            quiz = Quiz(
+                name=name,
+                date_of_quiz=date_of_quiz,
+                time_duration=time_duration,
+                marks=int(marks),
+                description=description,
+                chapter_id=int(chapter_id),
+                single_attempt=single_attempt
+            )
+            db.session.add(quiz)
+            db.session.commit()
+            return {"message": "Quiz created successfully"}, 201
+        except Exception as e:
+            return {"message": f"Error creating quiz: {str(e)}"}, 500
+
+    @auth_required('token')
+    @roles_required('admin')
+    def put(self, quiz_id):
+        args = quiz_parser.parse_args()
+        quiz = Quiz.query.get(quiz_id)
+
+        if not quiz:
+            return {"message": "Quiz not found"}, 404
+
+        try:
+            for attr in ['name', 'date_of_quiz', 'time_duration', 'marks', 'description', 'chapter_id', 'single_attempt']:
+                if args[attr] is not None:
+                    setattr(quiz, attr, args[attr])
+            db.session.commit()
+            return {"message": "Quiz updated successfully"}, 200
+        except Exception as e:
+            return {"message": f"Error updating quiz: {str(e)}"}, 500
+
+    @auth_required('token')
+    @roles_required('admin')
+    def delete(self, quiz_id):
+        quiz = Quiz.query.get(quiz_id)
+
+        if not quiz:
+            return {"message": "Quiz not found"}, 404
+
+        try:
+            db.session.delete(quiz)
+            db.session.commit()
+            return {"message": "Quiz deleted successfully"}, 200
+        except Exception as e:
+            return {"message": f"Error deleting quiz: {str(e)}"}, 500
+
+
+# Add the resource with multiple endpoints
+api.add_resource(QuizApi,
+                 '/api/quiz/get',
+                 '/api/quiz/create',
+                 '/api/quiz/update/<int:quiz_id>',
+                 '/api/quiz/delete/<int:quiz_id>')
+# class QuizApi(Resource):
+#     @auth_required('token')
+#     # @roles_required('admin')
+#     def get(self):
+#         quizzes = Quiz.query.all()
+#         quizzes_json = []
+#         for quiz in quizzes:
+#             this_quiz = {}
+#             this_quiz["id"] = quiz.id
+#             this_quiz["name"] = quiz.name
+#             this_quiz["date_of_quiz"] = quiz.date_of_quiz
+#             this_quiz["time_duration"] = quiz.time_duration
+#             this_quiz["marks"] = quiz.marks
+#             this_quiz["description"] = quiz.description
+#             this_quiz["chapter_name"] = quiz.chapter.name if quiz.chapter else None
+#             this_quiz["single_attempt"] = quiz.single_attempt
+#             this_quiz["questions"] = [q.question_statement for q in quiz.questions]
+#             quizzes_json.append(this_quiz)
+#         print(quizzes_json)
+#         if quizzes_json:
+#             return quizzes_json, 200
+        
+#         return {
+#             "message": "No quizzes found"
+#         }, 404
+
 
 class QuizscoresApi(Resource):
     @auth_required('token')
