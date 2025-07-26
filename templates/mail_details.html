@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance for this Month</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <img src="static/images/quizofy_logo_black.png" alt="Quizofy Logo" class="img-fluid mx-auto d-block mt-3" style="width: 200px;">
+        </div>
+        <div class="row">
+            <h1 class="text-center mt-2">Performance Details</h1>
+            <p class="fs-3">Hello {{data['username']}}</p>
+            <p class="fs-5">Please refer to the monthly performance of quizzes attempted by you in this month</p>
+        </div>
+        <div class="row">
+            <table class="table table-striped mx-2">
+                <thead>
+                    <tr>
+                        <th scope="col">Sr No</th>
+                        <th scope="col">Quiz Name</th>
+                        <th scope="col">Total Scored</th>
+                        <th scope="col">Total Possible Score</th>
+                        <th scope="col">Timestamp of Attempt</th>
+                        <th scope="col">Time Taken</th>                        
+                        <th scope="col">No. of Attempts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in data['quiz_scores'] %}
+                    <tr>
+                        <th scope="row">{{loop.index}}</th>
+                        <td>{{quiz['quiz_name']}}</td>
+                        <td>{{quiz['total_scored']}}</td>
+                        <td>{{quiz['total_possible_score']}}</td>
+                        <td>{{quiz['time_stamp_of_attempt']}}</td>
+                        <td>{{quiz['time_taken']}}</td>                        
+                        <td>{{quiz['attempts']}}</td>
+                    </tr>
+                    {% endfor %}
+                    
+                </tbody>  
+            </table>
+            <p class="fs-5">
+                Happy Quizzing!<br>
+                If you have any questions or need further assistance, feel free to reach out to us.
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-10"></div>
+            <div class="col-2">
+                <img src="static/stamp.jpg" alt="Company stamp" style="width: 150px;">
+            </div>
+        </div>
+        <div class="row">
+            <p class="text-center mt-2">
+                Quizofy | &copy; Copyright 2025 | Created at IITM
+            </p>
+        </div>
+    </div>
+    
+</body>
+</html>

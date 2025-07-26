@@ -1,4 +1,5 @@
 export default {
+    props: ['loggedIn'],
     template: `
     <div class ="row border">
         <div class="col" style="height: 500px">
@@ -48,6 +49,7 @@ export default {
                     localStorage.setItem("auth_token", data['auth-token'])// token is stored in local storage
                     localStorage.setItem("id", data.id)// user id is stored in local storage
                     localStorage.setItem("username", data.username)// username is stored in local storage
+                    this.$emit('login')
                     //for admin login - done
                     if (data.roles.includes('admin')) {
                         this.$router.push('/admin');

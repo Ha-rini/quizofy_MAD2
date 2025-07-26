@@ -1,3 +1,4 @@
+from flask_cache import cache
 from flask import request
 from flask_restful import Api, Resource, reqparse
 from .models import *
@@ -215,6 +216,7 @@ quiz_parser.add_argument('chapter_id', type=int)
 quiz_parser.add_argument('single_attempt', type=bool)
 
 class QuizApi(Resource):
+    @cache.cached(timeout=300, key_prefix='quiz_data')
     @auth_required('token')
     def get(self):
         quizzes = Quiz.query.all()
@@ -335,6 +337,43 @@ api.add_resource(QuizApi,
 #             "message": "No quizzes found"
 #         }, 404
 
+# class PlayQuizApi(Resource):
+#     @auth_required('token')
+#     @roles_accepted('user')
+#     def get(self,id):
+#         quiz = Quiz.query.get(id)
+#         if not quiz:
+#             return {"message": "Quiz not found"}, 404
+        
+#         questions = Questions.query.filter_by(quiz_id=id).all()
+#         questions_json = []
+#         for question in questions:
+#             this_question = {
+#                 "id": question.id,
+#                 "question_statement": question.question_statement,
+#                 "options": question.options,
+#                 "correct_answer": question.correct_answer
+#             }
+#             questions_json.append(this_question)
+        
+#         return {
+#             "quiz_name": quiz.name,
+#             "questions": questions_json
+#         }, 200
+        
+
+#     @auth_required('token')
+#     @roles_accepted('user')
+#     def post(self):
+#         data = request.get_json()
+#         quiz_id = data.get("quiz_id")
+#         user_id = current_user.id
+
+#         if not quiz_id:
+#             return {"message": "Quiz ID is required"}, 400
+
+#         # Logic to start the quiz for the user
+#         return {"message": "Quiz started successfully"}, 200
 
 class QuizscoresApi(Resource):
     @auth_required('token')

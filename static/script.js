@@ -30,17 +30,31 @@ const app = new Vue({
     
     template: `
     <div class="container">
-        <nav-bar></nav-bar>
-        <router-view></router-view>
-        <footer-bar></footer-bar> 
-        
+        <nav-bar :loggedIn = 'loggedIn' @logout="handleLogout"></nav-bar>
+        <router-view :loggedIn = 'loggedIn' @login="handleLogin"></router-view>
+        <footer-bar></footer-bar>
+
     </div>
     `,
     data: {
-        section:"Frontend"
+        loggedIn: false,
+        navBarbtns: {
+            summary: false,
+            search: false,
+            home: true,
+            scores: false
+        }
     },
     components: {
         'nav-bar': Navbar,
         'footer-bar': Footer
-    }
+    },
+    methods: {
+        handleLogin() {
+            this.loggedIn = true;
+        },
+        handleLogout() {
+            this.loggedIn = false;
+        }
+    },
 })

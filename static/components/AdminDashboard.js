@@ -2,6 +2,11 @@ export default {
     template: `
     <div>
         <h2 class="text-center mt-2">Welcome, Admin!</h2>
+        <div class="row border">
+            <div class="text-end my-2">
+                <button class="btn btn-danger" @click="downloadCSV">Download CSV</button>
+            </div>
+        </div>
         <div class="row border">        
             <div class="col-8 border" style="overflow-y: scroll; height: 80vh;">
                 <h4 class="mt-2 text-center">Your Subjects</h4>
@@ -130,7 +135,18 @@ export default {
                 this.fetchSubjects();
             })
             .catch(err => console.error(err));
+        },
+        downloadCSV() {
+            fetch('/api/export', {
+                method: 'GET',
+                headers: {
+                    'Authentication-Token': localStorage.getItem('auth_token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = `/api/csv_result/${data.id}`;
+            })
         }
-
     }
-};
+}

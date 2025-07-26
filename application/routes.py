@@ -1,11 +1,13 @@
+from application.tasks import csv_report, daily_reminder, monthly_report
 from .database import db
 from .models import User, Role, UserRoles, Subject, Chapter, Quiz, Questions, Scores
-from flask import current_app as app, jsonify, render_template, request
+from flask import current_app as app, jsonify, render_template, request, send_from_directory
 from flask_security import auth_required, roles_required, roles_accepted
 from flask_login import current_user, login_user, logout_user
 from flask_security import hash_password, verify_password
 from werkzeug.security import generate_password_hash, check_password_hash
 from .utils import roles_list
+from celery.result import AsyncResult
 
 @app.route('/')
 def home():
@@ -40,6 +42,7 @@ def user_login():
             #login the user
             login_user(user)
             print(current_user)
+            
             
             return jsonify({
                 "id": user.id,
@@ -94,6 +97,43 @@ def create_user():
             "message": "User already exists!"
         }), 400
 
+# @app.route('/api/logout')
+# @auth_required('token') #authentication
+# def user_logout():
+#     if current_user.is_authenticated:
+#         logout_user()
+#         return jsonify({
+#             "message": "User logged out successfully"
+#         }), 200
+#     return jsonify({
+#         "message": "User not logged in"
+#     }), 400
 
 
+@app.route('/api/export') # manually trigger the task
+def export_csv():
+    result = csv_report.delay() #async object
+    return jsonify({
+        "message": "CSV download initiated",
+        "id": result.id,
+        "result": result.result
+    }), 202
 
+@app.route('/api/csv_result/<id>') # just to check the status of the result
+def csv_result(id):
+    res = AsyncResult(id)
+    return send_from_directory('static', res.result)
+
+@app.route('/api/mail')
+def send_monthly_report():
+    res = monthly_report.delay()
+    return {
+        "res": res.result,
+    }
+
+@app.route('/api/daily_reminder')
+def send_daily_reminder():
+    res = daily_reminder.delay()
+    return {
+        "res": res.result,
+    }

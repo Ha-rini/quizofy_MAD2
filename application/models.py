@@ -52,6 +52,7 @@ class Quiz(db.Model):
     scores = db.relationship('Scores', backref='quiz', lazy=True, cascade='all, delete-orphan')
     single_attempt = db.Column(db.Boolean, default=False)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id', ondelete='CASCADE'))
+    scores = db.relationship('Scores', backref='quiz', lazy=True, cascade='all, delete-orphan')
     
 
 #one-to-many relationship between quiz and questions
