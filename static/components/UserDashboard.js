@@ -5,8 +5,11 @@ export default {
         <div class ="row border">
             <div class="col-8 border">
                 <h3 class="text-center">Upcoming Quizzes</h3> 
-                
-                <table class="table">
+                <tr v-if="quizzes.length === 0">
+                    <td colspan="10" class="text-center">No upcoming quizzes scheduled.</td>
+                </tr>
+
+                <table class="table" v-else>
                     <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -50,7 +53,7 @@ export default {
                         <div class="card-body">
                             <h5 class="card-title">{{sub.name}}</h5>
                             <p class="card-text">{{sub.description}}</p>
-                            <a href="#" class="btn btn-primary">See chapters</a>
+                            <router-link class="btn btn-primary" :to="{ name: 'Chapters', params: { subject_id: sub.id }, query: { readonly: true } }"> See chapters</router-link>
                         </div>
                     </div>
                 </div>
@@ -125,7 +128,7 @@ export default {
             .catch(err => console.error(err));
         },
         fetchQuizzes() {
-            fetch('/api/quiz/get', {
+            fetch('/api/quiz/upcoming', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -133,11 +136,10 @@ export default {
                 }
             })
             .then(response => {
-                if (!response.ok) throw new Error("Failed to fetch quizzes");
+                if (!response.ok) throw new Error("Failed to fetch upcoming quizzes");
                 return response.json();
             })
             .then(data => {
-                console.log(data);
                 this.quizzes = data;
             })
             .catch(err => console.error(err));
@@ -146,5 +148,9 @@ export default {
             // Set the selected quiz
             this.selectedQuiz = quiz;
         },
+        playQuiz(quiz) {
+            this.$router.push({ name: 'PlayQuiz', params: { quiz_id: quiz.id } });
+        }
+
     }
 }

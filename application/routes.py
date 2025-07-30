@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from application.tasks import csv_report, daily_reminder, monthly_report
 from .database import db
 from .models import User, Role, UserRoles, Subject, Chapter, Quiz, Questions, Scores
@@ -60,6 +61,13 @@ def user_login():
             "message": "User not found"
         }), 404
 
+@app.route('/api/user/role')
+@auth_required('token')
+def get_user_role():
+    user = current_user
+    roles = [role.name for role in user.roles]
+    return jsonify({'role': roles[0] if roles else 'user'})
+
 
 @app.route('/api/admin')
 @auth_required('token') #authentication
@@ -97,6 +105,7 @@ def create_user():
             "message": "User already exists!"
         }), 400
 
+
 # @app.route('/api/logout')
 # @auth_required('token') #authentication
 # def user_logout():
@@ -108,6 +117,59 @@ def create_user():
 #     return jsonify({
 #         "message": "User not logged in"
 #     }), 400
+
+
+# @app.route("/api/admin/stats")
+# @auth_required('token') #authentication
+# def admin_statistics():
+#     total_students = User.query.count()
+#     total_subjects = Subject.query.count()
+#     total_chapters = Chapter.query.count()
+#     total_quizzes = Quiz.query.count()
+
+#     # Subject-wise average performance
+#     subject_scores = db.session.query(
+#         Subject.name,
+#         db.func.avg(Scores.total_scored).label("avg_score")
+#     ).join(Chapter).join(Quiz).join(Scores).group_by(Subject.id).all()
+
+#     subject_scores_list = [{"subject": s[0], "avg_score": round(s[1], 2)} for s in subject_scores]
+
+#     # User-wise average quiz performance
+#     user_scores = db.session.query(
+#         User.username,
+#         db.func.avg(Scores.total_scored).label("avg_score")
+#     ).join(Scores).group_by(User.id).limit(10).all()
+
+#     user_scores_list = [{"username": u[0], "avg_score": round(u[1], 2)} for u in user_scores]
+
+#     return jsonify({
+#         "total_students": total_students,
+#         "total_subjects": total_subjects,
+#         "total_chapters": total_chapters,
+#         "total_quizzes": total_quizzes,
+#         "subject_scores": subject_scores_list,
+#         "user_scores": user_scores_list
+#     })
+
+@app.route('/api/user/me')
+@auth_required('token') #authentication
+def get_user_info():
+    return jsonify({"id": current_user.id, "username": current_user.username})
+
+@app.route('/api/score/by_user')
+@auth_required('token') #authentication
+def get_user_scores():
+    scores = Scores.query.filter_by(user_id=current_user.id).all()
+    return jsonify([
+        {
+            "quiz_id": s.quiz_id,
+            "total_scored": s.total_scored,
+            "total_possible_score": s.total_possible_score,
+            "time_stamp_of_attempt": s.time_stamp_of_attempt,
+            "attempts": s.attempts
+        } for s in scores
+    ])
 
 
 @app.route('/api/export') # manually trigger the task

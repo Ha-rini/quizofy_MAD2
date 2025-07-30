@@ -1,36 +1,47 @@
 export default {
     template: `
-    <div class ="row border">
+    <div class="row border">
         <div class="col" style="height: 500px">
-            <div class="border mx-auto mt-5" style="height:350px; width:300px">
-                Register Page
-                <br>
+            <div class="border mx-auto mt-5" style="height: 450px; width: 300px;">
                 <div>
-                        <label for="email">Email:</label> <br>
-                        <input type="email" id="email" v-model="formData.email">
+                    <h2 class="text-center mt-4">Register</h2>
+                    <p class="mx-2 mt-2 text-danger">{{message}}</p>
+                    
+                    <div class="mx-2 mb-2">
+                        <label for="email" class="form-label">Email address:</label>
+                        <input type="email" class="form-control" id="email" placeholder="name@example.com" v-model="formData.email">
                     </div>
-                    <div>
-                        <label for="username">Username:</label> <br>
-                        <input type="text" id="username" v-model="formData.username">
+
+                    <div class="mx-2 mb-2">
+                        <label for="username" class="form-label">Username:</label>
+                        <input type="text" class="form-control" id="username" v-model="formData.username">
                     </div>
-                    <div>
-                        <label for="password">Password:</label> <br>
-                        <input type="password" id="password" v-model="formData.password">
+
+                    <div class="mx-2 mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="password" v-model="formData.password">
                     </div>
-                    <div>
+
+                    <div class="mx-2 mb-3 text-center">
                         <button class="btn btn-dark" @click="registerUser">Register</button>
                     </div>
+
+                    <div class="text-center py-3">
+                        <router-link to="/login" class="small">Already have an account? Login</router-link>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     `,
     data: function() {
         return {
-            formData : {
-            email: "",
-            username: "",
-            password: ""
-            }
+            formData: {
+                email: "",
+                username: "",
+                password: ""
+            },
+            message: ""
         }
     },
     methods: {
@@ -40,14 +51,21 @@ export default {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(this.formData) //content goes to backend as JSON string
+                body: JSON.stringify(this.formData)
             })
-            .then(response => response.json()) // response is converted to JSON
+            .then(response => response.json())
             .then(data => {
-                alert(data.message); // Show the response message
-                console.log(data); // Log the response data for debugging
-                this.$router.push('/login'); // redirect to login page
+                if (data.message) {
+                    alert(data.message);
+                    this.$router.push('/login');
+                } else {
+                    this.message = "Registration failed. Please try again.";
+                }
             })
+            .catch(err => {
+                console.error(err);
+                this.message = "Something went wrong.";
+            });
         }
     }
 }

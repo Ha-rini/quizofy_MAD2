@@ -3,7 +3,7 @@ export default {
     template: `
     <div class ="row border">
         <div class="col" style="height: 500px">
-            <div class="border mx-auto mt-5" style="height:350px; width:300px">
+            <div class="border mx-auto mt-5" style="height:400px; width:300px">
                 <div>
                     <h2 class="text-center mt-5">Login</h2>
                     <p class="mx-2 mt-2 text-danger">{{message}}</p>
@@ -19,6 +19,10 @@ export default {
                     <div class="mx-2 mb-3 text-center">
                         <button class="btn btn-dark" @click="loginuser">Login</button>
                     </div>
+                    <div class="text-center py-3">
+                        <router-link to="/register" class="small">Don't have an account? Register</router-link>
+                    </div>
+
 
                 </div>
             </div>

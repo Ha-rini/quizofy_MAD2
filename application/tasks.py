@@ -49,27 +49,42 @@ def monthly_report():
 @shared_task(ignore_result=False, name='daily_reminder')
 def daily_reminder():
     print("Running daily_reminder task")
-    users = User.query.all()
-    for user in users[1:]:
-        user_data = {}
-        user_data['username'] = user.username
-        user_data['email'] = user.email   
-        quizzes = Quiz.query.all()
-        upcoming_quizzes = []
-        for quiz in quizzes:
-            upcoming_quizzes.append({
-                'quiz_name': quiz.name,
-                'date_of_quiz': quiz.date_of_quiz,
-                'time_duration': quiz.time_duration,
-                'marks': quiz.marks,
-                'description': quiz.description,
-                'single_attempt': quiz.single_attempt
-            })
-        user_data['upcoming_quizzes'] = upcoming_quizzes
-        if upcoming_quizzes:  # Send only if there are upcoming quizzes
-            message = format_report('templates/daily_reminder.html', data=user_data)
-            send_email(user.email, "Quizofy's Daily Reminder", message=message, content="html")
-
-    return "Daily reminder sent to email"
     
+    today = datetime.today().date()
+    users = User.query.all()
 
+    for user in users[1:]:  # Skip admin if needed
+        user_data = {
+            'username': user.username,
+            'email': user.email,
+            'upcoming_quizzes': []
+        }
+
+        quizzes = Quiz.query.all()
+        for quiz in quizzes:
+            try:
+                # Parse and clean quiz date
+                quiz_date = datetime.strptime(quiz.date_of_quiz.strip(), "%Y-%m-%d").date()
+                if quiz_date >= today:
+                    # Try to get chapter name (if relationship is properly set up)
+                    chapter_name = quiz.chapter.name if quiz.chapter else "N/A"
+                    
+                    user_data['upcoming_quizzes'].append({
+                        'name': quiz.name.strip() if quiz.name else "Untitled Quiz",
+                        'chapter': chapter_name,
+                        'date_of_quiz': quiz_date.strftime('%d %b %Y'),
+                        'time_duration': quiz.time_duration,
+                        'marks': quiz.marks,
+                        'description': quiz.description,
+                        'single_attempt': quiz.single_attempt
+                    })
+                    print(user_data['upcoming_quizzes'])
+            except Exception as e:
+                print(f"Skipping quiz {quiz.name if quiz.name else quiz.id} due to date error: {e}")
+                continue
+
+        if user_data['upcoming_quizzes']:
+            message = format_report('templates/daily_reminder.html', data=user_data)
+            send_email(user.email, "Quizofy's Daily Quiz Reminder", message=message, content="html")
+
+    return "Daily reminder sent to users"
